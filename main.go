@@ -13,18 +13,18 @@ import (
 
 // Default global parameters
 var englishLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-var allPossibleRotors = []string {"I", "II", "V", "VI", "Beta", "Gamma"}
+var allPossibleRotors = []string{"I", "II", "V", "VI", "Beta", "Gamma"}
 
-var enigmaConfig= struct {
+var enigmaConfig = struct {
 	Reflector string
 	Rings     []int
 	Positions []string
 	Rotors    []string
 }{
 	Reflector: "C-thin",
-	Rings:     []int {1, 1, 1, 16},
-	Positions: []string {"A", "A", "B", "Q"},
-	Rotors:    []string {"Beta", "II", "IV", "III"},
+	Rings:     []int{1, 1, 1, 16},
+	Positions: []string{"A", "A", "B", "Q"},
+	Rotors:    []string{"Beta", "II", "IV", "III"},
 }
 
 // Function to compute index of coincidence
@@ -58,7 +58,6 @@ func ComputeTrigramScore(text, plugboardSetting string) float64 {
 	return totalScore
 }
 
-
 // function to swap characters in Plugboard string
 func swapCharacters(char1 string, char2 string, PlugboardSetting string) string {
 	PlugboardSetting = strings.ReplaceAll(PlugboardSetting, char1, "*")
@@ -69,6 +68,7 @@ func swapCharacters(char1 string, char2 string, PlugboardSetting string) string 
 
 // declare and populate english trigram scores
 var trigramScores = make(map[string]float64)
+
 // function to populate scores
 func PopulateTrigramScores() {
 	// read english trigram file
@@ -107,9 +107,6 @@ func PopulateTrigramScores() {
 	}
 }
 
-
-
-
 // Function to load settings into enigma and encrypt the string
 // Input  -- text string to encrypt and plugboard settings
 // output -- encrypted string
@@ -126,7 +123,6 @@ func setEnigmaAndDecode(inputText string, plugboardSettings []string) string {
 
 	return string(encoded)
 }
-
 
 // function to get swapped values in pairs
 func createEnigmaPlugboard(currentPlugboard string) []string {
@@ -162,17 +158,20 @@ func HillClimb(text string) string {
 	maxIOC := float64(0)
 	total := float64(0)
 	count := float64(0)
+
 	for i := 0; i < 26; i++ {
 		currentPlugboard = bestPlugboard
 		IOC := float64(0)
 		for j := i + 1; j < 26; j++ {
-
 			// If letter is already swapped
 			// check which if the four permutations
 			var enigmaPlugboard []string
 			var decrypted string
 			if string(currentPlugboard[j]) != string(englishLetters[j]) {
 
+				enigmaPlugboard = createEnigmaPlugboard(englishLetters)
+				decrypted = setEnigmaAndDecode(text, enigmaPlugboard)
+				IOC = computeIOC(decrypted)
 				if total == 0 {
 					total = IOC
 					count++
@@ -186,7 +185,6 @@ func HillClimb(text string) string {
 				// swap them back to initial positions
 				tempPlugboardSettings = swapCharacters(string(englishLetters[j]), string(currentPlugboard[j]), currentPlugboard)
 				tempPlugboardSettings = swapCharacters(string(englishLetters[i]), string(currentPlugboard[i]), tempPlugboardSettings)
-
 
 				// check for 4 alternate possibilities in hill climbing
 				tempPlugboardSettings1 := swapCharacters(string(englishLetters[i]), string(currentPlugboard[i]), tempPlugboardSettings)
@@ -211,11 +209,9 @@ func HillClimb(text string) string {
 
 				// Choose the Highest IOC as temp settings for Plugboard
 				if IOC1 > IOC2 && IOC1 > IOC3 && IOC1 > IOC4 {
-
 					IOC = IOC1
 					tempPlugboardSettings = tempPlugboardSettings1
 				} else if IOC2 > IOC1 && IOC2 > IOC3 && IOC2 > IOC4 {
-
 					IOC = IOC2
 					tempPlugboardSettings = tempPlugboardSettings2
 				} else if IOC3 > IOC2 && IOC3 > IOC1 && IOC3 > IOC4 {
@@ -276,13 +272,13 @@ func main() {
 			if i == j {
 				continue
 			}
-			enigmaConfig.Rotors[0]=allPossibleRotors[i]
-			enigmaConfig.Rotors[1]=allPossibleRotors[j]
+			enigmaConfig.Rotors[0] = allPossibleRotors[i]
+			enigmaConfig.Rotors[1] = allPossibleRotors[j]
 			fmt.Println("Iteration: "+enigmaConfig.Rotors[0], enigmaConfig.Rotors[1])
 			for a := 0; a < 26; a++ {
 				for b := 0; b < 26; b++ {
-					enigmaConfig.Positions[0]=string(a + 65)
-					enigmaConfig.Positions[1]=string(b + 65)
+					enigmaConfig.Positions[0] = string(a + 65)
+					enigmaConfig.Positions[1] = string(b + 65)
 					bestPlugboardInstance, trigramScore := ComputePlugboardScores(cipherText)
 					if trigramScore > bestScore {
 						bestScore = trigramScore
@@ -299,26 +295,25 @@ func main() {
 		}
 	}
 
-
 	enigmaConfig.Rotors[0] = rotor1Setting
-	enigmaConfig.Rotors[1] =  rotor2Setting
+	enigmaConfig.Rotors[1] = rotor2Setting
 	enigmaConfig.Positions[0] = position1Setting
-	enigmaConfig.Positions[1] =  position2Setting
+	enigmaConfig.Positions[1] = position2Setting
 
 	bestEnigmaPlugboard := createEnigmaPlugboard(bestPlugboardSetting)
 	text := setEnigmaAndDecode(cipherText, bestEnigmaPlugboard)
 	fmt.Println("Plain Text:")
 	fmt.Println(text)
 
-	for index := range enigmaConfig.Rotors{
-		if index!=0{
+	for index := range enigmaConfig.Rotors {
+		if index != 0 {
 			fmt.Print(" ")
 		}
 		fmt.Print(enigmaConfig.Rotors[index])
 	}
 	fmt.Println()
-	for index := range enigmaConfig.Positions{
-		if index!=0{
+	for index := range enigmaConfig.Positions {
+		if index != 0 {
 			fmt.Print(" ")
 		}
 		fmt.Print(enigmaConfig.Positions[index])
@@ -326,8 +321,8 @@ func main() {
 	fmt.Println()
 
 	a := createEnigmaPlugboard(bestPlugboardSetting)
-	for index := range a{
-		if index!=0{
+	for index := range a {
+		if index != 0 {
 			fmt.Print(" ")
 		}
 		fmt.Print(a[index])
